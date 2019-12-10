@@ -24,79 +24,6 @@ PROVINCE_ID_PREFIXES = {
 }
 
 
-def create_ridings_data(raw_data):
-    """
-    Convert the elections candidate data (which is given by candidate) into a format
-    that is indexed by riding.
-    """
-
-    columns = [
-        'distnum',
-        'distname',
-        'bloc_share',
-        'cpc_share',
-        'gpc_share',
-        'lpc_share',
-        'ndp_share',
-        'ind_share',
-        'bloc_margin',
-        'cpc_margin',
-        'gpc_margin',
-        'lpc_margin',
-        'ndp_margin',
-        'ind_margin',
-        'winner',
-        'winnershare',
-        'province',
-    ]
-
-    ridings_df = pd.DataFrame(columns=columns)
-
-    riding_ids = raw_data.distnum.unique().tolist()
-  
-    for rid in riding_ids:
-        local_results = raw_data[raw_data.distnum == rid]
-        distnum = rid
-        distname = local_results.iloc[0].distname # distname
-
-        province = province_for_district_number(distnum)
-
-        windex = local_results.voteshare.idxmax() # voteshare
-        winner = local_results.loc[windex].party # party
-        winnershare = local_results.loc[windex].voteshare # voteshare
-
-        bloc_share = get_party_result_for_riding(distnum, 'Bloc', raw_data, local_results)
-        cpc_share = get_party_result_for_riding(distnum, 'CPC', raw_data, local_results)
-        gpc_share = get_party_result_for_riding(distnum, 'GPC', raw_data, local_results)
-        lpc_share = get_party_result_for_riding(distnum, 'LPC', raw_data, local_results)
-        ndp_share = get_party_result_for_riding(distnum, 'NDP', raw_data, local_results)
-        ind_share = get_party_result_for_riding(distnum, 'IND', raw_data, local_results)
-
-        local_row_data = {
-            'distnum': rid,
-            'distname': distname,
-            'bloc_share': bloc_share,
-            'cpc_share': cpc_share,
-            'gpc_share': gpc_share,
-            'lpc_share': lpc_share,
-            'ndp_share': ndp_share,
-            'ind_share': ind_share,
-            'bloc_margin': bloc_share - winnershare,
-            'cpc_margin': cpc_share - winnershare,
-            'gpc_margin': gpc_share - winnershare,
-            'lpc_margin': lpc_share - winnershare,
-            'ndp_margin': ndp_share - winnershare,
-            'ind_margin': ind_share - winnershare,
-            'winner': winner,
-            'winnershare': winnershare,
-            'province': province,
-        }
-
-        ridings_df = ridings_df.append(local_row_data, ignore_index=True)
-
-    return ridings_df
-
-
 def alternate_reality(ridings_data):
     """
     Create a new dataset from  our usual ridings data in which all NDP and GPC votes
@@ -180,6 +107,128 @@ def plot_district(distnum, data):
     plt.show()
 
 
+def do_join(df43, df42):
+    return df43.set_index('distnum').join(
+        df42.set_index('distnum'),
+        how='left',
+        lsuffix='43',
+        rsuffix='42',
+    )
+
+def get_list_of_swings(joined_data):
+    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
+    columns = ['distname', 'party', 'province', 'swing']
+
+    swings = pd.DataFrame(columns=columns)
+
+    swings.distname - joined_data.distname43
+
+    for party in parties:
+        party_swings = pd.DataFrame(columns=columns)
+
+        party_swings.distname = joined_data.distname43.copy()
+        party_swings.province = joined_data.province43.copy()
+
+        party_key_43 = '%s_share43' % party.lower()
+        party_key_42 = '%s_share42' % party.lower()
+        party_swings.swing = joined_data[party_key_43] - joined_data[party_key_42]
+
+        party_swings.party = party
+
+        swings = pd.concat([swings, party_swings])
+
+    return swings
+
+
+def get_swing_data(party, joined_data):
+    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
+    columns = ['distname'] + parties
+    swing_data = pd.DataFrame(columns=columns)
+
+    swing_data['distname'] = joined_data['distname43']
+
+    for party in parties:
+        party_key_43 = '%s_share43' % party.lower()
+        party_key_42 = '%s_share42' % party.lower()
+
+        swing_data[party] = joined_data[party_key_43] - joined_data[party_key_42]
+
+    return swing_data
+
+
+def create_ridings_data(raw_data):
+    """
+    Convert the elections candidate data (which is given by candidate) into a format
+    that is indexed by riding.
+    """
+
+    columns = [
+        'distnum',
+        'distname',
+        'bloc_share',
+        'cpc_share',
+        'gpc_share',
+        'lpc_share',
+        'ndp_share',
+        'ind_share',
+        'bloc_margin',
+        'cpc_margin',
+        'gpc_margin',
+        'lpc_margin',
+        'ndp_margin',
+        'ind_margin',
+        'winner',
+        'winnershare',
+        'province',
+    ]
+
+    ridings_df = pd.DataFrame(columns=columns)
+
+    riding_ids = raw_data.distnum.unique().tolist()
+  
+    for rid in riding_ids:
+        local_results = raw_data[raw_data.distnum == rid]
+        distnum = rid
+        distname = local_results.iloc[0].distname # distname
+
+        province = province_for_district_number(distnum)
+
+        windex = local_results.voteshare.idxmax() # voteshare
+        winner = local_results.loc[windex].party # party
+        winnershare = local_results.loc[windex].voteshare # voteshare
+
+        bloc_share = get_party_result_for_riding(distnum, 'Bloc', raw_data, local_results)
+        cpc_share = get_party_result_for_riding(distnum, 'CPC', raw_data, local_results)
+        gpc_share = get_party_result_for_riding(distnum, 'GPC', raw_data, local_results)
+        lpc_share = get_party_result_for_riding(distnum, 'LPC', raw_data, local_results)
+        ndp_share = get_party_result_for_riding(distnum, 'NDP', raw_data, local_results)
+        ind_share = get_party_result_for_riding(distnum, 'IND', raw_data, local_results)
+
+        local_row_data = {
+            'distnum': rid,
+            'distname': distname,
+            'bloc_share': bloc_share,
+            'cpc_share': cpc_share,
+            'gpc_share': gpc_share,
+            'lpc_share': lpc_share,
+            'ndp_share': ndp_share,
+            'ind_share': ind_share,
+            'bloc_margin': bloc_share - winnershare,
+            'cpc_margin': cpc_share - winnershare,
+            'gpc_margin': gpc_share - winnershare,
+            'lpc_margin': lpc_share - winnershare,
+            'ndp_margin': ndp_share - winnershare,
+            'ind_margin': ind_share - winnershare,
+            'winner': winner,
+            'winnershare': winnershare,
+            'province': province,
+        }
+
+        ridings_df = ridings_df.append(local_row_data, ignore_index=True)
+
+    return ridings_df
+
+
 def province_for_district_number(district_number):
     prefix = int(district_number / 1000)
   
@@ -245,59 +294,67 @@ def extract_party_from_candidate_field(candidate):
     return party
 
 
-def do_join(df43, df42):
-    return df43.set_index('distnum').join(
-        df42.set_index('distnum'),
-        how='left',
-        lsuffix='43',
-        rsuffix='42',
-    )
+def prune_2019_data(raw_data):
+    """
+    This conforms the raw data received from Elections Canada to a more readily-usable
+    format.
+    """
+    df2 = raw_data.rename(columns={
+        'Electoral district number - Numéro de la circonscription': 'distnum',
+        'Type of results*': 'resulttype',
+        'Electoral district name': 'distname',
+        'Political affiliation': 'party',
+        'Votes obtained - Votes obtenus': 'numvotes',
+        '% Votes obtained - Votes obtenus %': 'voteshare',
+        'Given name - Prénom': 'firstname',
+        'Surname - Nom de famille': 'lastname',
+    })
 
-def get_list_of_swings(joined_data):
-    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
-    columns = ['distname', 'party', 'province', 'swing']
+    df2 = df2[df2['resulttype'] == 'validated']
+    df2['candidate'] = df2['firstname'] + ' ' + df2['lastname']
 
-    swings = pd.DataFrame(columns=columns)
+    df2 = df2.drop(columns=[
+        'Total number of ballots cast - Nombre total de votes déposés',
+        'Rejected ballots - Bulletins rejetés***',
+        'Type de résultats**',
+        'Nom de la circonscription',
+        'Appartenance politique',
+        'resulttype',
+        'firstname',
+        'lastname',
+        'Middle name(s) - Autre(s) prénom(s)',
+    ])
 
-    swings.distname - joined_data.distname43
+    df2['party'] = df2['party'].apply(lambda x: format_party_name(x))
+    df2.distnum = df2.distnum.astype('int')
+    df2['province'] = df2['distnum'].apply(lambda x: province_for_district_number(x))
 
-    for party in parties:
-        party_swings = pd.DataFrame(columns=columns)
-
-        party_swings.distname = joined_data.distname43.copy()
-        party_swings.province = joined_data.province43.copy()
-
-        party_key_43 = '%s_share43' % party.lower()
-        party_key_42 = '%s_share42' % party.lower()
-        party_swings.swing = joined_data[party_key_43] - joined_data[party_key_42]
-
-        party_swings.party = party
-
-        swings = pd.concat([swings, party_swings])
-
-    return swings
+    return df2
 
 
-def get_swing_data(party, joined_data):
-    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
-    columns = ['distname'] + parties
-    swing_data = pd.DataFrame(columns=columns)
+def format_party_name(party_name):
+    party = ''
 
-    swing_data['distname'] = joined_data['distname43']
-
-    for party in parties:
-        party_key_43 = '%s_share43' % party.lower()
-        party_key_42 = '%s_share42' % party.lower()
-
-        swing_data[party] = joined_data[party_key_43] - joined_data[party_key_42]
-
-    return swing_data
+    if party_name == 'Bloc Québécois':
+        party = 'Bloc'
+    elif party_name == 'Conservative':
+        party = 'CPC'
+    elif party_name == 'Green Party':
+        party = 'GPC'
+    elif party_name == 'Liberal':
+        party = 'LPC'
+    elif party_name == 'NDP-New Democratic Party':
+        party = 'NDP'
+    else:
+        party = 'IND'
+    
+    return party 
 
 
 # Main.
-raw_data_2019 = pd.read_csv('data/latest.csv')
-raw_data_2015 = prune_2015_data(pd.read_csv('data/elections_canada_2015_data.csv'))
+raw42 = prune_2015_data(pd.read_csv('data/elections_canada_2015_data.csv'))
+raw43 = prune_2019_data(pd.read_csv('data/elections_canada_2019_data.csv', header=1))
 
-df42 = create_ridings_data(raw_data_2015)
-df43 = create_ridings_data(raw_data_2019)
+df42 = create_ridings_data(raw42)
+df43 = create_ridings_data(raw43)
 
