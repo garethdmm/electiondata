@@ -64,8 +64,7 @@ def near_misses_for_party(party, ridings_data):
     """
     margin_key = '%s_margin' % party.lower()
 
-    return ridings_data[['distname', margin_key, 'winner']]\
-        [ridings_data[margin_key] < 0]\
+    return ridings_data[ridings_data[margin_key] < 0]\
         [ridings_data[margin_key] > -10.0]\
         .sort_values(by=margin_key)
 
