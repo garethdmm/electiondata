@@ -9,6 +9,18 @@ import pandas as pd
 import data_operations
 
 
+PARTY_COLOURS = {
+  'LPC': 'r',
+  'CPC': 'b',
+  'GPC': 'g',
+  'NDP': 'orange',
+  'GDP': 'g',
+  'Bloc': 'c',
+  'BLOC': 'c',
+  'IND': 'k',
+}
+
+
 def alternate_reality(ridings_data):
     """
     Create a new dataset from  our usual ridings data in which all NDP and GPC votes
@@ -146,6 +158,76 @@ def domination_visualization(data):
     plt.title('Dominated ridings by Province')
     plt.show()
 
+
+def alternate_house_visualization(data):
+    althouse = alternate_reality(data)
+
+    house43 = data.winner.value_counts()
+    althouse43 = althouse.winner.value_counts()
+
+    plt.cla()
+
+    plt.subplot(211)
+    plt.pie(
+        house43.values,
+        labels=house43.index,
+        colors=['r', 'b', 'c', 'orange', 'g', 'b'],
+    )
+    plt.title('43rd House of Commons')
+
+    plt.subplot(212)
+    plt.pie(
+        althouse43.values,
+        labels=althouse43.index,
+        colors=['r', 'b', 'g', 'c'],
+    )
+    plt.title('43rd House of Commons with Unified Left')
+
+    plt.show()
+
+
+def althouse_viz_2(df43):
+    althouse = alternate_reality(df43)
+
+    house43 = df43.winner.value_counts()
+    althouse43 = althouse.winner.value_counts()
+
+    plt.ion()
+
+    plt.subplot(221)
+    house_pie_chart(house43)
+    plt.subplot(222)
+    house_pie_chart(althouse43)
+    plt.subplot(223)
+    house_bar_chart(house43)
+    plt.subplot(224)
+    house_bar_chart(althouse43)
+
+    plt.subplot(221)
+    plt.title('43rd House of Commons')
+
+    plt.subplot(222)
+    plt.title('43rd House with Unified Left')
+
+
+def house_pie_chart(results):
+    colours = [PARTY_COLOURS[party] for party in results.index]
+
+    plt.pie(results.values, labels=results.index, colors=colours)
+
+    plt.show()
+
+
+def house_bar_chart(results):
+    colours = [PARTY_COLOURS[party] for party in results.index]
+    plt.bar(results.index, results.values, color=colours)
+
+    plt.ylim(0, 180)
+
+    for i, v in enumerate(results.values):
+        plt.text(i - 0.18, v + 10, str(v), color=colours[i])
+
+    plt.show()
 
 df42 = data_operations.load_2015_ridings_data()
 df43 = data_operations.load_2019_ridings_data()
