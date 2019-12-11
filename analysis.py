@@ -129,6 +129,25 @@ def get_swing_data(party, joined_data):
     return swing_data
 
 
+def domination_visualization(data):
+    dominated_ridings = data[data.winnershare > 60]
+
+    byparty = dominated_ridings.winner.value_counts()
+    byprov = dominated_ridings.province.value_counts()
+
+    plt.cla()
+
+    plt.subplot(211)
+    bars = plt.bar(byparty.index, byparty.values)
+    bars[1].set_color('r')
+    plt.title('Dominated ridings by Party')
+
+    plt.subplot(212)
+    bars = plt.barh(byprov.index, byprov.values)
+    plt.title('Dominated ridings by Province')
+    plt.show()
+
+
 df42 = data_operations.load_2015_ridings_data()
 df43 = data_operations.load_2019_ridings_data()
 
