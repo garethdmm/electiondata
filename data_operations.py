@@ -118,15 +118,15 @@ def prune_2015_data(raw_data):
     an easier schema.
     """
     formatted_data = raw_data.drop(columns=[
-        'Majority/Majorit\xc3\xa9',
+        'Majority/Majorité',
         'Candidate Occupation/Profession du candidat',
-        'Majority Percentage/Pourcentage de majorit\xc3\xa9',
-        'Candidate Residence/R\xc3\xa9sidence du candidat',
+        'Majority Percentage/Pourcentage de majorité',
+        'Candidate Residence/Résidence du candidat',
     ])
 
     formatted_data.rename(columns={
         u'Electoral District Name/Nom de circonscription': 'distname',
-        'Electoral District Number/Num\xc3\xa9ro de circonscription': 'distnum',
+        'Electoral District Number/Numéro de circonscription': 'distnum',
         u'Province': 'province',
         u'Percentage of Votes Obtained /Pourcentage des votes obtenus': 'voteshare',
         u'Candidate/Candidat': 'candidate',
@@ -161,13 +161,13 @@ def prune_2015_data(raw_data):
 def extract_party_from_candidate_field(candidate):
     party = ''
 
-    if 'Bloc Qu\xc3\xa9b\xc3\xa9cois/Bloc Qu\xc3\xa9b\xc3\xa9cois' in candidate:
+    if 'Bloc Québécois/Bloc Québécois' in candidate:
         party = 'Bloc'
     elif 'Conservative/Conservateur' in candidate:
         party = 'CPC'
     elif 'Green Party/Parti Vert' in candidate:
         party = 'GPC'
-    elif 'Liberal/Lib\xc3\xa9ral' in candidate:
+    elif 'Liberal/Libéral' in candidate:
         party = 'LPC'
     elif 'NDP-New Democratic Party' in candidate:
         party = 'NDP'
@@ -258,14 +258,28 @@ def format_party_name(party_name):
 
 def load_2015_ridings_data(recalculate=False):
     if recalculate is True:
-        return prune_2015_data(pd.read_csv('data/elections_canada_2015_data.csv'))
+        candidate_data = prune_2015_data(pd.read_csv(
+            'data/elections_canada_2015_data.csv',
+            header=0,
+        ))
+
+        ridings_data = create_ridings_data(candidate_data)
+
+        return ridings_data
     else:
         return pd.read_csv('data/parsed_ridings_data_2015.csv')
 
 
 def load_2019_ridings_data(recalculate=False):
     if recalculate is True:
-        return prune_2019_data(pd.read_csv('data/elections_canada_2019_data.csv'))
+        candidate_data = prune_2019_data(pd.read_csv(
+            'data/elections_canada_2019_data.csv',
+            header=1,
+        ))
+
+        ridings_data = create_ridings_data(candidate_data)
+
+        return ridings_data
     else:
         return pd.read_csv('data/parsed_ridings_data_2019.csv')
 
