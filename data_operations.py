@@ -103,7 +103,7 @@ def get_party_result_for_riding(distnum, party, data, riding_results=None):
 
     party_result = riding_results[riding_results.party == party]
 
-    return party_result['voteshare'].tolist()[0] # voteshare
+    return max(party_result['voteshare'].tolist()) # voteshare
 
 
 def province_for_district_number(district_number):
