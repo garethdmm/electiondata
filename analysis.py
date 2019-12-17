@@ -9,6 +9,8 @@ import pandas as pd
 import data_operations
 
 
+MAJOR_PARTIES = ['Bloc', 'CPC', 'GPC', 'LPC', 'NDP']
+
 PARTY_COLOURS = {
   'LPC': 'tab:red',
   'CPC': 'tab:blue',
@@ -18,6 +20,16 @@ PARTY_COLOURS = {
   'Bloc': 'tab:cyan',
   'IND': 'tab:grey',
 }
+
+WEAK_CONJECTURE_TITLE = """
+43rd House of Commons, Seat Changes with a Unified Left, and resulting alternate House\
+of Commons\
+"""
+
+STRONG_CONJECTURE_TITLE = """\
+43rd House of Commons, Seat Changes with a Unified Left and 5% Swing, and resulting\
+alternate House\
+"""
 
 
 def alternate_reality(ridings_data):
@@ -68,128 +80,6 @@ def alternate_reality(ridings_data):
     alt_ridings['ind_margin'] = alt_ridings['ind_share'] - winnershare
 
     return alt_ridings
-
-
-def near_misses_for_party(party, ridings_data):
-    """
-    Show the ridings for a given party where they lost by less than 10%, sorted by
-    the loss margin.
-    """
-    margin_key = '%s_margin' % party.lower()
-
-    return ridings_data[ridings_data[margin_key] < 0]\
-        [ridings_data[margin_key] > -10.0]\
-        .sort_values(by=margin_key)
-
- 
-def results_for_district(distnum, data):
-    return data[data['distnum'] == distnum]
-
-
-def plot_district(distnum, data):
-    results = results_for_district(distnum, data)
-    results.plot.bar(x='party', y='voteshare')
-    plt.show()
-
-
-def get_swings_heatmap_data(joined):
-    changes = joined[joined.winner42 != joined.winner43]
-
-    parties = ['Bloc', 'CPC', 'GPC', 'LPC', 'NDP']
-
-    df = pd.DataFrame()
-
-    for p1 in parties:
-        z = {x: 0 for x in parties}
-
-        for p2 in parties:
-            if p1 == p2:
-                z[p2] == 0
-            else:
-                wins = changes[changes.winner42 == p1][changes.winner43 == p2]
-                print(wins)
-                z[p2] = wins.shape[0]
-
-        df[p1] = pd.Series(z)
-
-    return df
-
-
-def plot_swings_heatmap(joined):
-    df = get_swings_heatmap_data(joined)
-
-    plt.ion()
-
-    ax = sns.heatmap(df, cbar=False, cmap='Blues', annot=True)
-
-    ax.invert_yaxis()
-    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
-    ax.xaxis.tick_top()
-    ax.figure.subplots_adjust(bottom = 0.5)
-
-    plt.suptitle('Seat handovers by winning party (top) and losing party (left)')
-
-    return ax
-
-
-def get_list_of_swings(joined_data):
-    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
-    columns = ['distname', 'party', 'province', 'swing']
-
-    swings = pd.DataFrame(columns=columns)
-
-    swings.distname - joined_data.distname43
-
-    for party in parties:
-        party_swings = pd.DataFrame(columns=columns)
-
-        party_swings.distname = joined_data.distname43.copy()
-        party_swings.province = joined_data.province43.copy()
-
-        party_key_43 = '%s_share43' % party.lower()
-        party_key_42 = '%s_share42' % party.lower()
-        party_swings.swing = joined_data[party_key_43] - joined_data[party_key_42]
-
-        party_swings.party = party
-
-        swings = pd.concat([swings, party_swings])
-
-    return swings
-
-
-def get_swing_data(party, joined_data):
-    parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
-    columns = ['distname'] + parties
-    swing_data = pd.DataFrame(columns=columns)
-
-    swing_data['distname'] = joined_data['distname43']
-
-    for party in parties:
-        party_key_43 = '%s_share43' % party.lower()
-        party_key_42 = '%s_share42' % party.lower()
-
-        swing_data[party] = joined_data[party_key_43] - joined_data[party_key_42]
-
-    return swing_data
-
-
-def domination_visualization(data):
-    dominated_ridings = data[data.winnershare > 60]
-
-    byparty = dominated_ridings.winner.value_counts()
-    byprov = dominated_ridings.province.value_counts()
-
-    plt.cla()
-
-    plt.subplot(211)
-    bars = plt.bar(byparty.index, byparty.values)
-    bars[1].set_color('r')
-    plt.title('Dominated ridings by Party')
-
-    plt.subplot(212)
-    bars = plt.barh(byprov.index, byprov.values)
-    plt.title('Dominated ridings by Province')
-    plt.show()
 
 
 def plot_alternate_reality_weak(df43, new_fig=True):
@@ -246,7 +136,7 @@ def plot_alternate_reality_weak(df43, new_fig=True):
         textprops={'fontsize': 'large'},
     )
 
-    plt.suptitle('43rd House of Commons, Seat Changes with a Unified Left, and resulting alternate House of Commons', fontsize='x-large')
+    plt.suptitle(WEAK_CONJECTURE_TITLE, fontsize='x-large')
 
 
 def plot_alternate_reality_strong(df43, new_fig=True):
@@ -309,12 +199,154 @@ def plot_alternate_reality_strong(df43, new_fig=True):
         textprops={'fontsize': 'large'},
     )
 
-    plt.suptitle('43rd House of Commons, Seat Changes with a Unified Left and 5% Swing, and resulting alternate House')
+    plt.suptitle(STRONG_CONJECTURE_TITLE, fontsize='x-large')
 
     plt.show()
 
 
+def near_misses_for_party(party, ridings_data):
+    """
+    Show the ridings for a given party where they lost by less than 10%, sorted by
+    the loss margin.
+    """
+    margin_key = '%s_margin' % party.lower()
+
+    return ridings_data[ridings_data[margin_key] < 0]\
+        [ridings_data[margin_key] > -10.0]\
+        .sort_values(by=margin_key)
+
+
+def results_for_district(distnum, data):
+    """
+    Get only the results for a single district ID.
+    """
+    return data[data['distnum'] == distnum]
+
+
+def plot_district(distnum, data):
+    """
+    Plot the results for a single district by district ID.
+    """
+    results = results_for_district(distnum, data)
+    results.plot.bar(x='party', y='voteshare')
+    plt.show()
+
+
+def get_swings_heatmap_data(joined):
+    """
+    Generates a dataframe where the index and columns are both the five major parties,
+    and a cell is the number of seats that flipped from the row-party to the column-
+    party between the 42nd and 43rd elections.
+    """
+    changes = joined[joined.winner42 != joined.winner43]
+
+    df = pd.DataFrame()
+
+    for p1 in MAJOR_PARTIES:
+        z = {x: 0 for x in parties}
+
+        for p2 in MAJOR_PARTIES:
+            if p1 == p2:
+                z[p2] == 0
+            else:
+                wins = changes[changes.winner42 == p1][changes.winner43 == p2]
+                z[p2] = wins.shape[0]
+
+        df[p1] = pd.Series(z)
+
+    return df
+
+
+def plot_swings_heatmap(joined):
+    """
+    Plots the data from get_swings_heatmap_data in an intelligent way.
+    """
+    df = get_swings_heatmap_data(joined)
+
+    plt.ion()
+
+    ax = sns.heatmap(df, cbar=False, cmap='Blues', annot=True)
+
+    ax.invert_yaxis()
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+    ax.xaxis.tick_top()
+    ax.figure.subplots_adjust(bottom = 0.5)
+
+    plt.suptitle('Seat handovers by winning party (top) and losing party (left)')
+
+    return ax
+
+
+def get_list_of_swings(joined_data):
+    """
+    Generates a list of all the changes in party voteshare for every riding, so that
+    we can see which parties in which ridings had the biggest changes.
+    """
+    columns = ['distname', 'party', 'province', 'swing']
+
+    swings = pd.DataFrame(columns=columns)
+
+    swings.distname - joined_data.distname43
+
+    for party in MAJOR_PARTIES:
+        party_swings = pd.DataFrame(columns=columns)
+
+        party_swings.distname = joined_data.distname43.copy()
+        party_swings.province = joined_data.province43.copy()
+
+        party_key_43 = '%s_share43' % party.lower()
+        party_key_42 = '%s_share42' % party.lower()
+        party_swings.swing = joined_data[party_key_43] - joined_data[party_key_42]
+
+        party_swings.party = party
+
+        swings = pd.concat([swings, party_swings])
+
+    return swings
+
+
+def get_swing_data(party, joined_data):
+    columns = ['distname'] + parties
+    swing_data = pd.DataFrame(columns=columns)
+
+    swing_data['distname'] = joined_data['distname43']
+
+    for party in MAJOR_PARTIES:
+        party_key_43 = '%s_share43' % party.lower()
+        party_key_42 = '%s_share42' % party.lower()
+
+        swing_data[party] = joined_data[party_key_43] - joined_data[party_key_42]
+
+    return swing_data
+
+
+def plot_dominated_ridings(data):
+    """
+    Shows a simple visualization of which parties won seats with > 60% of the vote share
+    and in which provinces.
+    """
+    dominated_ridings = data[data.winnershare > 60]
+
+    byparty = dominated_ridings.winner.value_counts()
+    byprov = dominated_ridings.province.value_counts()
+
+    plt.cla()
+
+    plt.subplot(211)
+    bars = plt.bar(byparty.index, byparty.values)
+    bars[1].set_color('r')
+    plt.title('Dominated ridings by Party')
+
+    plt.subplot(212)
+    bars = plt.barh(byprov.index, byprov.values)
+    plt.title('Dominated ridings by Province')
+    plt.show()
+
+
 def house_pie_chart(results):
+    """
+    Simple pie chart of the house of commons in the given election results.
+    """
     colours = [PARTY_COLOURS[party] for party in results.index]
 
     plt.pie(results.values, labels=results.index, colors=colours)
@@ -323,6 +355,9 @@ def house_pie_chart(results):
 
 
 def house_bar_chart(results):
+    """
+    Simple bar chart of the house of commons in the given election results.
+    """
     colours = [PARTY_COLOURS[party] for party in results.index]
     plt.bar(results.index, results.values, color=colours)
 
