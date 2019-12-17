@@ -202,55 +202,126 @@ def domination_visualization(data):
     plt.show()
 
 
-def alternate_house_visualization(data):
-    althouse = alternate_reality(data)
+def plot_alternate_reality_weak(df43, new_fig=True):
+    """
+    This version shows the 43rd house, changes, and 43rd alternate house in the weak
+    unified-left conjecture (left win where GPC + NDP > previous winner)..
+    """
+    alt = alternate_reality(df43)
 
-    house43 = data.winner.value_counts()
-    althouse43 = althouse.winner.value_counts()
+    house = df43.winner.value_counts()
+    althouse = alt.winner.value_counts()
 
-    plt.cla()
+    gdp_old = house['NDP'] + house['GPC']
 
-    plt.subplot(211)
-    plt.pie(
-        house43.values,
-        labels=house43.index,
-        colors=['r', 'b', 'c', 'orange', 'g', 'b'],
-    )
-    plt.title('43rd House of Commons')
+    new_parties = ['Bloc', 'CPC', 'GDP', 'LPC', 'IND']
 
-    plt.subplot(212)
-    plt.pie(
-        althouse43.values,
-        labels=althouse43.index,
-        colors=['r', 'b', 'g', 'c'],
-    )
-    plt.title('43rd House of Commons with Unified Left')
+    house = house.reindex(new_parties, fill_value=0)
+    house['GDP'] = gdp_old
 
-    plt.show()
+    althouse = althouse.reindex(new_parties, fill_value=0)
 
+    changes = althouse - house
 
-def althouse_viz_2(df43):
-    althouse = alternate_reality(df43)
+    colours = [PARTY_COLOURS[party] for party in changes.index]
 
-    house43 = df43.winner.value_counts()
-    althouse43 = althouse.winner.value_counts()
+    if new_fig is True:
+        plt.figure(figsize=(15,4.5))
 
     plt.ion()
 
-    plt.subplot(221)
-    house_pie_chart(house43)
-    plt.subplot(222)
-    house_pie_chart(althouse43)
-    plt.subplot(223)
-    house_bar_chart(house43)
-    plt.subplot(224)
-    house_bar_chart(althouse43)
+    plt.subplot(131)
+    plt.pie(
+        house.values,
+        labels=['%s %s' % (party, house[party]) for party in house.index],
+        colors=[PARTY_COLOURS[party] for party in house.index],
+        textprops={'fontsize': 'large'},
+    )
 
-    plt.subplot(221)
-    plt.title('43rd House of Commons')
+    plt.subplot(132)
+    plt.barh(
+        changes.index,
+        changes.values,
+        color=colours,
+    )
+    plt.axvline(x=0, color='tab:grey')
+    plt.xlim(-20,20)
+    plt.xticks((-20, -10, 0, 10, 20))
 
-    plt.subplot(222)
-    plt.title('43rd House with Unified Left')
+    plt.subplot(133)
+    plt.pie(
+        althouse.values,
+        labels=['%s %s' % (party, althouse[party]) for party in althouse.index],
+        colors=[PARTY_COLOURS[party] for party in althouse.index],
+        textprops={'fontsize': 'large'},
+    )
+
+    plt.suptitle('43rd House of Commons, Seat Changes with a Unified Left, and resulting alternate House of Commons', fontsize='x-large')
+
+
+def plot_alternate_reality_strong(df43, new_fig=True):
+    """
+    This version shows the 43rd house, changes, and 43rd alternate house in the strong
+    unified-left conjecture (all ridings within a 10% margin of left victory become
+    wins).
+    """
+    alt = alternate_reality(df43)
+
+    alt.winner = alt.apply(
+        lambda x: 'GDP' if x.gdp_margin > -10 and x.gdp_margin < 0 else x.winner,
+        axis=1,
+    )
+
+    house = df43.winner.value_counts()
+    althouse = alt.winner.value_counts()
+
+    gdp_old = house['NDP'] + house['GPC']
+
+    new_parties = ['Bloc', 'CPC', 'GDP', 'LPC', 'IND']
+
+    house = house.reindex(new_parties, fill_value=0)
+    house['GDP'] = gdp_old
+
+    althouse = althouse.reindex(new_parties, fill_value=0)
+
+    changes = althouse - house
+
+    colours = [PARTY_COLOURS[party] for party in changes.index]
+
+    if new_fig is True:
+        plt.figure(figsize=(15,4.5))
+
+    plt.ion()
+
+    plt.subplot(131)
+    plt.pie(
+        house.values,
+        labels=['%s %s' % (party, house[party]) for party in house.index],
+        colors=[PARTY_COLOURS[party] for party in house.index],
+        textprops={'fontsize': 'large'},
+    )
+
+    plt.subplot(132)
+    plt.barh(
+        changes.index,
+        changes.values,
+        color=colours,
+    )
+    plt.axvline(x=0, color='tab:grey')
+    plt.xlim(-40,40)
+    plt.xticks((-40, -20, 0, 20, 40))
+
+    plt.subplot(133)
+    plt.pie(
+        althouse.values,
+        labels=['%s %s' % (party, althouse[party]) for party in althouse.index],
+        colors=[PARTY_COLOURS[party] for party in althouse.index],
+        textprops={'fontsize': 'large'},
+    )
+
+    plt.suptitle('43rd House of Commons, Seat Changes with a Unified Left and 5% Swing, and resulting alternate House')
+
+    plt.show()
 
 
 def house_pie_chart(results):
