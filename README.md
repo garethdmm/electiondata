@@ -1,5 +1,5 @@
-# electiondata
-Easy to use .csv results for the 2015 and 2019 Canadian Federal Elections and some simple insights from the data.
+# Canadian Federal Election Data, 2015 and 2019
+Easy to use .csv results for the 2015 and 2019 Canadian Federal Elections and some simple insights from the data. Used to generate the visualizations in the blogpost (A few things you didn't know about the 2019 Canadian Election)[https://medium.com/@garethmacleod/a-few-things-you-didnt-know-about-the-2019-canadian-election-59ed848da6f5].
 
 ## Data
 Elections Canada provides summary data for elections in .csv formats, but the schema isn't consistent from year to year and contains a lot of duplication. You can get the retrieve these files yourself from elections Canada, or use the copies we've stored here.
@@ -12,5 +12,12 @@ The `data_operations` module contains functions to clean up and standardize this
 - `data/parsed_ridings_data_2015.csv`
 - `data/parsed_ridings_data_2019.csv`
 
-The new schema is as follows:
+## Analysis
 
+Most of the functions for creating the visualizations in the blogpost are in `analysis.py`. My workflow for this project has to load this file directly into an ipython shell with `ipython -i analysis.py`. You'll find the 2015 and 2019 election data is pre-loaded into dataframes named `df42` and `df43` respectively.
+
+## Further work
+
+The riding-by-riding data on it's own is a very lightweight dataset. Some other interesting research directions would be:
+* Stage the poll-by-poll data that Elections Canada provides, combine it with demographic or economic data to look for patterns.
+* Stage the data from earlier elections and look for decades-long patterns. This will take a bit of intelligence since there was a redistricting before 2015.
