@@ -5,6 +5,7 @@ Various useful functions for inspecting the 2019 Canadian Federal Election resul
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 import data_operations
 
