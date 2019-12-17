@@ -101,6 +101,47 @@ def do_join(df43, df42):
         rsuffix='42',
     )
 
+
+def get_swings_heatmap_data(joined):
+    changes = joined[joined.winner42 != joined.winner43]
+
+    parties = ['Bloc', 'CPC', 'GPC', 'LPC', 'NDP']
+
+    df = pd.DataFrame()
+
+    for p1 in parties:
+        z = {x: 0 for x in parties}
+
+        for p2 in parties:
+            if p1 == p2:
+                z[p2] == 0
+            else:
+                wins = changes[changes.winner42 == p1][changes.winner43 == p2]
+                print(wins)
+                z[p2] = wins.shape[0]
+
+        df[p1] = pd.Series(z)
+
+    return df
+
+
+def plot_swings_heatmap(joined):
+    df = get_swings_heatmap_data(joined)
+
+    plt.ion()
+
+    ax = sns.heatmap(df, cbar=False, cmap='Blues', annot=True)
+
+    ax.invert_yaxis()
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+    ax.xaxis.tick_top()
+    ax.figure.subplots_adjust(bottom = 0.5)
+
+    plt.suptitle('Seat handovers by winning party (top) and losing party (left)')
+
+    return ax
+
+
 def get_list_of_swings(joined_data):
     parties = ['bloc', 'cpc', 'gpc', 'lpc', 'ndp']
     columns = ['distname', 'party', 'province', 'swing']
