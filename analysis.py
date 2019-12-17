@@ -10,14 +10,14 @@ import data_operations
 
 
 PARTY_COLOURS = {
-  'LPC': 'r',
-  'CPC': 'b',
-  'GPC': 'g',
-  'NDP': 'orange',
-  'GDP': 'g',
-  'Bloc': 'c',
-  'BLOC': 'c',
-  'IND': 'k',
+  'LPC': 'tab:red',
+  'CPC': 'tab:blue',
+  'GPC': 'tab:green',
+  'NDP': 'tab:orange',
+  'GDP': 'tab:green',
+  'Bloc': 'tab:cyan',
+  'BLOC': 'tab:cyan',
+  'IND': 'tab:grey',
 }
 
 
