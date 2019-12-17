@@ -55,6 +55,8 @@ def alternate_reality(ridings_data):
         .idxmax(axis=1)\
         .apply(lambda x: x.replace('_share', '').upper())
 
+    winner = winner.apply(lambda x: 'Bloc' if x == 'BLOC' else x)
+
     winnershare = alt_ridings[new_share_columns].max(axis=1)
 
     alt_ridings['winner'] = winner
