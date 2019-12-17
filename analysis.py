@@ -272,6 +272,8 @@ def house_bar_chart(results):
 
     plt.show()
 
+
 df42 = data_operations.load_2015_ridings_data()
 df43 = data_operations.load_2019_ridings_data()
+joined_data = do_join(df42, df43)
 
