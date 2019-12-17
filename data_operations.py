@@ -284,3 +284,12 @@ def load_2019_ridings_data(recalculate=False):
         return pd.read_csv('data/parsed_ridings_data_2019.csv')
 
 
+def get_2019_2015_joined_data(df43, df42):
+    return df43.set_index('distnum').join(
+        df42.set_index('distnum'),
+        how='left',
+        lsuffix='43',
+        rsuffix='42',
+    )
+
+

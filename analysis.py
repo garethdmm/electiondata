@@ -16,7 +16,6 @@ PARTY_COLOURS = {
   'NDP': 'tab:orange',
   'GDP': 'tab:green',
   'Bloc': 'tab:cyan',
-  'BLOC': 'tab:cyan',
   'IND': 'tab:grey',
 }
 
@@ -91,15 +90,6 @@ def plot_district(distnum, data):
     results = results_for_district(distnum, data)
     results.plot.bar(x='party', y='voteshare')
     plt.show()
-
-
-def do_join(df43, df42):
-    return df43.set_index('distnum').join(
-        df42.set_index('distnum'),
-        how='left',
-        lsuffix='43',
-        rsuffix='42',
-    )
 
 
 def get_swings_heatmap_data(joined):
@@ -346,5 +336,5 @@ def house_bar_chart(results):
 
 df42 = data_operations.load_2015_ridings_data()
 df43 = data_operations.load_2019_ridings_data()
-joined_data = do_join(df42, df43)
+joined_data = data_operations.get_2019_2015_joined_data(df42, df43)
 
