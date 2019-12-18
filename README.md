@@ -1,5 +1,5 @@
 # 2015-19 Canadian Federal Election Data and Simple Analysis
-Easy to use .csv results for the 2015 and 2019 Canadian Federal Elections and some simple insights from the data. Used to generate the visualizations in the blogpost (A few things you didn't know about the 2019 Canadian Election)[https://medium.com/@garethmacleod/a-few-things-you-didnt-know-about-the-2019-canadian-election-59ed848da6f5].
+Easy to use .csv results for the 2015 and 2019 Canadian Federal Elections and some simple insights from the data. Used to generate the visualizations in the blogpost [A few things you didn't know about the 2019 Canadian Election](https://medium.com/@garethmacleod/a-few-things-you-didnt-know-about-the-2019-canadian-election-59ed848da6f5).
 
 ![alttext](img/handover_heatmap.png)
 
