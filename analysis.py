@@ -303,6 +303,8 @@ def get_list_of_swings(joined_data):
 
         swings = pd.concat([swings, party_swings])
 
+    swings = swings.reset_index()
+
     return swings
 
 
