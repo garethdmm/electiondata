@@ -372,6 +372,37 @@ def house_bar_chart(results):
     plt.show()
 
 
+def get_outperformance_of_local_campaigns(joined_data):
+    """
+    This function asks the question: "Which local campaigns did particularly good jobs?"
+
+    To answer this we take a simple model of the world, where a local result is the sum
+    of local efforts plus the provincial trend. We simply subtract the provincial trend
+    from the results to find the local-effort component of the result, what is here
+    referred to as 'outperformance'.
+    """
+    swings = get_list_of_swings(joined_data)
+    provinces = data_operations.PROVINCE_ID_PREFIXES.values()
+
+    df = pd.DataFrame(columns=MAJOR_PARTIES, index=provinces)
+
+    for prov in provinces:
+        for party in MAJOR_PARTIES:
+            mean = swings[swings.province == prov][swings.party == party].swing.mean()
+            df.loc[prov][party] = mean
+
+    outperformance = swings.copy()
+
+    outperformance['localtrend'] = swings.apply(
+        lambda x: df.loc[x.province][x.party],
+        axis=1,
+    )
+
+    outperformance['outperformance'] = outperformance.swing - outperformance.localtrend
+
+    return outperformance
+
+
 df42 = data_operations.load_2015_ridings_data()
 df43 = data_operations.load_2019_ridings_data()
 joined_data = data_operations.get_2019_2015_joined_data(df42, df43)
